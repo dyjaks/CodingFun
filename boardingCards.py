@@ -14,7 +14,6 @@ class Travel:
     Problem statement assumes valid approach, even so we'll assume otherwise
     No source or dest is provided, must find one so should use top sort
     Will takes kahns approach
-
     Space Complexity: O(V+E)
     Time Complexity: O(V+E)
     '''
@@ -22,7 +21,7 @@ class Travel:
         def __init__(self, message):
             self.message = message
 
-    def top_sort(self, graph: dict, node_degree: dict) -> list[str]:
+    def top_sort(graph, node_degree):
         def generate_output():
             res = []
             for ix, p in enumerate(path):
@@ -34,24 +33,25 @@ class Travel:
         q = deque()
         for degree in node_degree:
             if node_degree[degree] == 0:
-                q.append(node_degree)
+                q.append(degree)
 
         while q:
             curr = q.popleft()
-            path.append(graph[curr][1])
+            path.append(curr)
 
-            for node in node_degree[curr]:
-                node_degree[node] -= 1
-                if node_degree[node] == 0:
-                    q.append(node)
+            if curr in graph:
+              for node in graph[curr]:
+                  node_degree[node[0]] -= 1
+                  if node_degree[node[0]] == 0:
+                      q.append(node[0])
 
         if len(path) != len(node_degree):
-            raise self.NoPathFoundException('No Valid Path Exists')
+            raise Travel.NoPathFoundException('No Valid Path Exists')
 
-        output = generate_output()
-        return output
+        #output = generate_output()
+        return path
 
-    def get_itenary(self, cards: list[BoardingCard]) -> list[str]:
+    def get_itenary(cards):
         def build_adj_list() -> dict:
             mp = {}
             for card in cards:
@@ -64,28 +64,35 @@ class Travel:
 
         def build_degree_counter(graph: dict) -> dict:
             d = {}
+            for c in cards:
+                if c.origin not in d:
+                    d[c.origin] = 0
+                if c.destination not in d:
+                    d[c.destination] = 0
             for v in graph:
-                for target in graph[v][0]:
-                    d[target] = d.get(target, 0) + 1
+                for target in graph[v]:
+                    d[target[0]] += 1
 
             return d
 
         graph = build_adj_list()
+        #print(graph)
         node_degree = build_degree_counter(graph)
+        #print(node_degree)
         possible_path = []
         try:
-            possible_path = self.top_sort(graph, node_degree)
+            possible_path = Travel.top_sort(graph, node_degree)
             possible_path.append('You have arrived at your final destination.')
-        except self.NoPathFoundException:
+        except Travel.NoPathFoundException:
             return ['We are not able to find a working itneary with those boarding cards']
 
         return possible_path
 
 
 if __name__ == '__main__':
-    trip1 = self.BoardingCard('Seattle', 'Los Angeles', 'Plane', '32A')
-    trip2 = self.BoardingCard('Atlanta', 'Dallas', 'Car', 'No Seat Assignment')
-    trip3 = self.BoardingCard('Los Angles', 'Atlanta', 'Train', 'First Class 2B')
+    trip1 = Travel.BoardingCard('Seattle', 'Los Angeles', 'Plane', '32A')
+    trip2 = Travel.BoardingCard('Atlanta', 'Dallas', 'Car', 'No Seat Assignment')
+    trip3 = Travel.BoardingCard('Los Angeles', 'Atlanta', 'Train', 'First Class 2B')
     trips = [trip1, trip2, trip3]
-    trip_order = self.get_itenary(trips)
+    trip_order = Travel.get_itenary(trips)
     print(trip_order)
